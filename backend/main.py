@@ -1,7 +1,7 @@
 # pyright: reportMissingImports=false
 
 from fastapi import FastAPI, UploadFile, File
-from openai_helper import test_openai
+from openai_helper import test_openai, explain_medical_report
 import pdfplumber
 
 app = FastAPI()
@@ -13,11 +13,13 @@ def home():
         "status": "running"
     }
 
+
 @app.get("/test-ai")
 def test_ai():
     return {
         "response": test_openai()
     }
+
 
 @app.post("/analyze")
 async def analyze_report(file: UploadFile = File(...)):
@@ -30,8 +32,10 @@ async def analyze_report(file: UploadFile = File(...)):
             if text:
                 extracted_text += text + "\n"
 
+    analysis = explain_medical_report(extracted_text)
+
     return {
         "filename": file.filename,
         "characters_extracted": len(extracted_text),
-        "text_preview": extracted_text[:3000]
+        "analysis": analysis
     }
