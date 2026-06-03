@@ -3,6 +3,7 @@
 from fastapi import FastAPI, UploadFile, File
 from openai_helper import test_openai, explain_medical_report
 import pdfplumber
+import json
 
 app = FastAPI()
 
@@ -32,7 +33,8 @@ async def analyze_report(file: UploadFile = File(...)):
             if text:
                 extracted_text += text + "\n"
 
-    analysis = explain_medical_report(extracted_text)
+    analysis_text = explain_medical_report(extracted_text)
+    analysis = json.loads(analysis_text)
 
     return {
         "filename": file.filename,
