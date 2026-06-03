@@ -1,4 +1,7 @@
+# pyright: reportMissingImports=false
+
 from fastapi import FastAPI, UploadFile, File
+from openai_helper import test_openai
 import pdfplumber
 
 app = FastAPI()
@@ -8,6 +11,12 @@ def home():
     return {
         "project": "MedLens AI",
         "status": "running"
+    }
+
+@app.get("/test-ai")
+def test_ai():
+    return {
+        "response": test_openai()
     }
 
 @app.post("/analyze")
