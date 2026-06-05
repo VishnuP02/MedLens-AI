@@ -43,6 +43,8 @@ def test_ai():
 
 @app.post("/analyze")
 async def analyze_report(file: UploadFile = File(...)):
+    print("STEP 1: File received - main.py:46")
+
     if not file.filename.lower().endswith(".pdf"):
         return {
             "error": "Only PDF files are supported."
@@ -50,11 +52,16 @@ async def analyze_report(file: UploadFile = File(...)):
 
     extracted_text = ""
 
+    print("STEP 2: Starting PDF extraction - main.py:55")
+
     with pdfplumber.open(file.file) as pdf:
         for page in pdf.pages:
             text = page.extract_text()
             if text:
                 extracted_text += text + "\n"
+
+    print("STEP 3: PDF text extracted - main.py:63")
+    print("Characters extracted: - main.py:64", len(extracted_text))
 
     if not extracted_text.strip():
         return {
@@ -63,11 +70,17 @@ async def analyze_report(file: UploadFile = File(...)):
             "error": "No readable text was found in this PDF. OCR support is planned for a future version."
         }
 
-    analysis_text = explain_medical_report(extracted_text[:8000])
+    print("STEP 4: Sending to OpenAI - main.py:73")
+
+    analysis_text = explain_medical_report(extracted_text[:4000])
+
+    print("STEP 5: OpenAI response received - main.py:77")
 
     try:
         analysis = json.loads(analysis_text)
+        print("STEP 6: JSON parsed successfully - main.py:81")
     except json.JSONDecodeError:
+        print("STEP 6: JSON parsing failed - main.py:83")
         analysis = {
             "document_type": "Unknown",
             "severity_level": "Unknown",
@@ -79,6 +92,8 @@ async def analyze_report(file: UploadFile = File(...)):
             ],
             "lab_values": []
         }
+
+    print("STEP 7: Returning response - main.py:96")
 
     return {
         "filename": file.filename,
